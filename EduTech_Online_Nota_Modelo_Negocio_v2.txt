@@ -1,0 +1,294 @@
+EDUTECH ONLINE
+Modelo de Gestion Academica para Escuela Universitaria Virtual
+Nota de descripcion del negocio - VERSION 2
+(incluye ajustes derivados de la retroalimentacion en clase)
+
+====================================================================
+DESCRIPCION GENERAL
+====================================================================
+
+La institucion EduTech Online desea implementar una base de datos
+que le permita administrar la inscripcion de alumnos a los cursos
+que conforman sus programas academicos (diplomados, maestrias y
+cursos libres), la asignacion de maestros a cada curso mediante la
+carga academica, la calificacion de proyectos, el repositorio de
+contenidos, el otorgamiento de becas/descuentos segun el desempeno
+academico del alumno, y la evaluacion del desempeno docente.
+
+El objetivo es que el area academica pueda controlar:
+- Que alumnos estan inscritos en que cursos y grupos.
+- Que maestros imparten cada curso/grupo.
+- Como se evaluan los proyectos entregados.
+- Como se organiza el material didactico.
+- Como se otorgan beneficios (becas) segun el desempeno.
+- Como se mide el desempeno de los maestros.
+- Cuanto ingreso genera cada programa y curso.
+
+Dentro del alcance:
+- Alumnos.
+- Maestros.
+- Tipos de programa.
+- Programas academicos.
+- Cursos de cada programa.
+- Carga academica (asignacion de maestro a curso/grupo).
+- Inscripciones de alumnos a cursos.
+- Proyectos y calificaciones.
+- Repositorio de contenido.
+- Becas (catalogo de tipos de beca) aplicadas en inscripciones.
+- Evaluacion docente por parte de los alumnos.
+- Desempeno del maestro.
+- Costo de programas y de cursos.
+
+Fuera del alcance:
+- Pagos y facturacion detallada.
+- Control de asistencia por sesion en vivo.
+- Mensajeria interna entre alumnos y maestros.
+- Generacion de certificados o titulos.
+- Videoconferencias o plataformas de streaming.
+- Horarios detallados, secciones de teoria/practica y cupos.
+
+====================================================================
+1. ALUMNOS
+====================================================================
+Datos: codigo, nombre completo, documento de identidad, correo
+electronico, fecha de registro, estado (activo/inactivo).
+Un alumno puede tener una o varias inscripciones a cursos.
+
+====================================================================
+2. MAESTROS
+====================================================================
+Datos: codigo, nombre completo, documento de identidad, correo
+electronico, especialidad (informatica, finanzas u otra), fecha de
+alta, estado.
+Un maestro se asigna a cursos/grupos mediante la carga academica
+(seccion 6). Tambien puede ser responsable de un programa y subir
+contenido al repositorio.
+
+====================================================================
+3. TIPOS DE PROGRAMA (REDEFINIDO)
+====================================================================
+El tipo de programa describe el FORMATO de formacion del programa:
+- Diplomado.
+- Maestria.
+- Curso libre (programa de un solo curso, para quien solo desea
+  tomar un curso).
+
+Datos: codigo, nombre, descripcion.
+
+Cambios respecto a la version anterior:
+- Ya no se usa "Curso" como tipo, porque ahora el curso es una
+  entidad propia (seccion 5).
+- Se elimina la duracion estimada del tipo (la duracion se maneja
+  en el programa y en el curso).
+- Se ELIMINA la tabla de categorias (informatica/finanzas). El area
+  tematica queda reflejada en el nombre/descripcion del programa y
+  en la especialidad del maestro.
+
+====================================================================
+4. PROGRAMAS ACADEMICOS
+====================================================================
+Un programa es el paquete de formacion que agrupa uno o varios
+cursos.
+
+Ejemplo: Diplomado en Data Analyst, que incluye los cursos de
+Modelamiento de datos, Python y Estadistica.
+
+Datos: codigo, nombre, tipo de programa, descripcion, duracion
+(horas o semanas), nivel (basico, intermedio, avanzado), maestro
+responsable, COSTO del programa (precio del paquete completo),
+estado (activo, en preparacion, cerrado).
+
+Un programa tiene uno o varios cursos.
+
+====================================================================
+5. CURSOS (NUEVO)
+====================================================================
+Un curso es una materia que forma parte de un programa.
+
+Datos: codigo, programa al que pertenece, nombre, descripcion,
+duracion, COSTO del curso (precio individual), estado (activo,
+en preparacion, cerrado).
+
+Un curso pertenece a un solo programa. Un curso puede ofrecerse
+en uno o varios grupos (seccion 6).
+
+====================================================================
+6. CARGA ACADEMICA (NUEVO)
+====================================================================
+La carga academica es la asignacion de un maestro a un curso/grupo.
+Si a un curso se inscriben demasiados alumnos, se divide en grupos
+(ej. Modelamiento de datos - Grupo 1 y Grupo 2), cada uno con su
+maestro.
+
+Datos: codigo, curso, maestro, grupo, fecha de inicio, fecha de
+fin, estado (programada, en curso, cerrada).
+
+Un curso puede tener varias cargas academicas. Un maestro puede
+tener varias cargas academicas. Cada alumno se inscribe a una carga
+academica (seccion 7).
+
+====================================================================
+7. INSCRIPCIONES (MODIFICADO)
+====================================================================
+La inscripcion registra que un alumno se matricula a un curso en
+un grupo especifico (carga academica).
+
+Datos: alumno, carga academica (de ahi se deriva el curso, el
+programa y el maestro), beca aplicada (opcional), fecha de
+inscripcion, fecha de finalizacion (si corresponde), estado
+(inscrito, en curso, finalizado, retirado).
+
+Reglas de negocio:
+- Cuando un alumno se matricula a un programa completo, se generan
+  automaticamente sus inscripciones a cada uno de los cursos del
+  programa (no existe una inscripcion directa al programa).
+- Un alumno puede inscribirse al mismo curso mas de una vez en
+  diferentes momentos.
+- La beca es OPCIONAL: no todas las inscripciones tienen beca.
+- Una inscripcion NO puede pasar a estado "finalizado" si el alumno
+  no ha registrado previamente la evaluacion del maestro (seccion
+  13).
+
+====================================================================
+8. PROYECTOS (MODIFICADO)
+====================================================================
+Los proyectos pertenecen a un CURSO (ya no al programa).
+
+Datos: codigo, curso al que pertenece, nombre, descripcion, fecha
+limite de entrega.
+
+====================================================================
+9. ENTREGAS Y CALIFICACIONES (MODIFICADO)
+====================================================================
+Los alumnos entregan los proyectos del curso al que estan inscritos
+y el maestro asignado a su grupo los califica.
+
+Datos: inscripcion del alumno, proyecto, fecha de entrega, archivo
+o referencia de la entrega, calificacion, comentarios del maestro,
+estado (pendiente, entregado, calificado).
+
+El maestro que califica ya no se guarda en la entrega: se deriva de
+la carga academica de la inscripcion.
+
+====================================================================
+10. REPOSITORIO DE CONTENIDO
+====================================================================
+Sin cambios en esta version.
+
+Datos: programa al que pertenece, maestro que lo sube, tipo de
+contenido (video, lectura, presentacion, ejercicio, otro), nombre
+del recurso, fecha de publicacion, referencia o ubicacion del
+archivo, estado (visible/oculto).
+
+====================================================================
+11. DESEMPENO ACADEMICO DEL ALUMNO (MODIFICADO)
+====================================================================
+Desempeno = promedio de calificaciones de los proyectos entregados
+por un alumno en un curso (por inscripcion).
+Se analiza por: alumno, curso, programa y maestro.
+(Se elimina el analisis por categoria.)
+
+====================================================================
+12. BECAS (REDEFINIDO)
+====================================================================
+Las becas son un CATALOGO de tipos de beca predefinidos por la
+institucion. Se aplican a los alumnos en su inscripcion.
+
+Datos del tipo de beca: codigo, nombre, descripcion, porcentaje de
+descuento, calificacion minima requerida, programa (opcional: si se
+indica, la beca solo aplica a cursos de ese programa; si no, es
+general), estado.
+
+Catalogo inicial (calificacion minima -> descuento):
+  Excelencia  (10.0)  ->  30%
+  Destacada   (9.5)   ->  15%
+  Merito      (9.0)   ->  10%
+
+Reglas de negocio:
+- Al finalizar un curso, la calificacion promedio del alumno
+  determina la beca a la que tiene derecho: la de mayor porcentaje
+  cuya calificacion minima sea menor o igual a su promedio.
+- La beca se aplica en la SIGUIENTE inscripcion del alumno, dentro
+  de 1 mes contado desde la fecha de finalizacion de su ultimo
+  curso. Pasado ese plazo, pierde vigencia.
+- No se guarda un registro de "beca otorgada": solo se registra la
+  beca efectivamente utilizada en la inscripcion. La vigencia se
+  valida comparando contra la ultima inscripcion finalizada del
+  alumno.
+- Se elimina la relacion directa entre alumno y beca; todo se
+  resuelve en la inscripcion.
+
+====================================================================
+13. EVALUACION DOCENTE (MODIFICADO)
+====================================================================
+Al finalizar un curso, el alumno debe evaluar al maestro que lo
+imparti. La evaluacion se ancla a la inscripcion, por lo que de ahi
+se derivan el curso y el maestro evaluado (a traves de la carga
+academica). Ya no es por programa.
+
+Datos: inscripcion, fecha de evaluacion, calificacion otorgada al
+maestro, comentarios (opcional).
+
+Reglas de negocio:
+- Un alumno evalua al maestro una sola vez por inscripcion.
+- La evaluacion es OBLIGATORIA: una inscripcion no puede marcarse
+  como "finalizada" sin que exista su evaluacion.
+
+====================================================================
+14. DESEMPENO DEL MAESTRO (MODIFICADO)
+====================================================================
+Se calcula combinando varias fuentes, todas en sentido positivo
+(como un incentivo, no como una penalizacion):
+
+1. Desempeno indirecto: promedio de las calificaciones que obtienen
+   los alumnos en los cursos/grupos que el maestro imparte.
+2. Desempeno directo: promedio de las evaluaciones que los alumnos
+   le otorgan al finalizar cada inscripcion.
+3. Ingreso generado por el incentivo de becas (pendiente de
+   resolver como consulta en el laboratorio de BD): cuando un
+   alumno obtiene una beca por su desempeno con un maestro y la
+   utiliza en una nueva inscripcion, el ingreso neto cobrado
+   (costo del curso x (1 - % de descuento)) se atribuye al maestro
+   del ultimo curso finalizado del alumno. Este vinculo se obtiene
+   por consulta, cruzando la inscripcion con beca y la inscripcion
+   finalizada previa del mismo alumno.
+
+Se puede consultar por maestro, curso, programa y periodo. Los dos
+primeros componentes se resuelven con una vista
+(vw_desempeno_maestro); el tercero queda a proposito para el
+laboratorio de consultas.
+
+====================================================================
+NOTA SOBRE EL COSTO
+====================================================================
+- Costo del programa: precio del paquete completo.
+- Costo del curso: precio del curso individual.
+- Para el analisis de ingreso por inscripcion se usa el costo del
+  curso.
+
+====================================================================
+HISTORIAL DE CAMBIOS DE LA VERSION 2
+====================================================================
+- Nuevo: Cursos (programa 1:N cursos).
+- Nuevo: Carga academica (curso + maestro + grupo).
+- Modificado: la inscripcion es a la carga academica (curso/grupo),
+  no al programa.
+- Modificado: proyectos dependen del curso.
+- Modificado: entregas dependen de la inscripcion; el maestro se
+  deriva de la carga academica.
+- Modificado: la evaluacion docente se ancla a curso y maestro
+  (via inscripcion y carga academica).
+- Modificado: becas como catalogo de tipos, aplicadas en la
+  inscripcion; se elimina la relacion alumno-beca.
+- Eliminado: categorias de programa.
+- Redefinido: tipo de programa (formato: diplomado, maestria,
+  curso libre).
+- Modificado: costo en programa y en curso.
+
+====================================================================
+PUNTOS PENDIENTES DE DECISION
+====================================================================
+- Repositorio de contenido: sigue ligado al programa; podria
+  pasar al curso.
+- Maestro responsable del programa: se conserva; con la carga
+  academica podria resultar innecesario.
